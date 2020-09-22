@@ -110,12 +110,15 @@ enum IOSAccessibility {
 }
 
 class IOSOptions extends Options {
-  IOSOptions({String groupId, IOSAccessibility accessibility = IOSAccessibility.unlocked}): 
+  IOSOptions({String groupId, IOSAccessibility accessibility = IOSAccessibility.unlocked, String syncFlag}):
             _groupId = groupId,
-            _accessibility = accessibility;
+            _accessibility = accessibility,
+            _syncFlag = syncFlag;
 
   final String _groupId;
   final IOSAccessibility _accessibility;
+  final String _syncFlag;
+
   @override
   Map<String, String> _toMap() {
     final m = Map<String, String>();
@@ -124,6 +127,9 @@ class IOSOptions extends Options {
     }
     if (_accessibility != null) {
       m['accessibility'] = describeEnum(_accessibility);
+    }
+    if (_syncFlag != null) {
+      m['synchronizable'] = _syncFlag;
     }
     return m;
   }

@@ -1,13 +1,12 @@
 #import "FlutterSecureStoragePlugin.h"
 
-static NSString *const KEYCHAIN_SERVICE = @"flutter_secure_storage_service";
 static NSString *const CHANNEL_NAME = @"plugins.it_nomads.com/flutter_secure_storage";
 
 static NSString *const InvalidParameters = @"Invalid parameter's type";
 
 @interface FlutterSecureStoragePlugin()
 
-@property (strong, nonatomic) NSDictionary *query;
+@property (strong, nonatomic) NSMutableDictionary *query;
 
 @end
 
@@ -18,7 +17,7 @@ static NSString *const InvalidParameters = @"Invalid parameter's type";
     if (self){
         self.query = @{
                        (__bridge id)kSecClass :(__bridge id)kSecClassGenericPassword,
-                       (__bridge id)kSecAttrService :KEYCHAIN_SERVICE,
+                       (__bridge id)kSecAttrService :[[NSBundle mainBundle] bundleIdentifier],
                        };
     }
     return self;
@@ -39,11 +38,11 @@ static NSString *const InvalidParameters = @"Invalid parameter's type";
     if ([@"read" isEqualToString:call.method]) {
         NSString *key = arguments[@"key"];
         NSString *groupId = options[@"groupId"];
-        NSString *value = [self read:key forGroup:groupId];
-        
+        NSObject *synchronizable = options[@"synchronizable"];
+        NSString *value = [self read:key forGroup:groupId synchronizable: synchronizable];
+
         result(value);
-    } else
-    if ([@"write" isEqualToString:call.method]) {
+    } else if ([@"write" isEqualToString:call.method]) {
         NSString *key = arguments[@"key"];
         NSString *value = arguments[@"value"];
         NSString *groupId = options[@"groupId"];
@@ -72,7 +71,12 @@ static NSString *const InvalidParameters = @"Invalid parameter's type";
         NSDictionary *value = [self readAll: groupId];
 
         result(value);
-    }else {
+    } else if ([@"setKeychainService" isEqualToString:call.method]) {
+        NSMutableDictionary *_query = [self.query mutableCopy];
+        _query[(__bridge id)kSecAttrService] = arguments[@"service"];
+        self.query = _query;
+        result(nil);
+    } else {
         result(FlutterMethodNotImplemented);
     }
 }
@@ -128,14 +132,15 @@ static NSString *const InvalidParameters = @"Invalid parameter's type";
     }
 }
 
-- (NSString *)read:(NSString *)key forGroup:(NSString *)groupId {
+- (NSString *)read:(NSString *)key forGroup:(NSString *)groupId  synchronizable: (NSObject *) sync  {
     NSMutableDictionary *search = [self.query mutableCopy];
     if(groupId != nil) {
      search[(__bridge id)kSecAttrAccessGroup] = groupId;
     }
     search[(__bridge id)kSecAttrAccount] = key;
     search[(__bridge id)kSecReturnData] = (__bridge id)kCFBooleanTrue;
-    
+    search[(__bridge id)kSecAttrSynchronizable] = sync;
+
     CFDataRef resultData = NULL;
     
     OSStatus status;
