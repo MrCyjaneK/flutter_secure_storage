@@ -17,6 +17,7 @@ static NSString *const InvalidParameters = @"Invalid parameter's type";
     if (self){
         self.query = @{
                        (__bridge id)kSecClass :(__bridge id)kSecClassGenericPassword,
+                       (__bridge id)kSecAttrService :[[NSBundle mainBundle] bundleIdentifier],
                        };
     }
     return self;
@@ -96,7 +97,7 @@ static NSString *const InvalidParameters = @"Invalid parameter's type";
     CFBooleanRef attrSynchronizable = kCFBooleanFalse;
     if ([synchronizable isEqualToString:@"true"]) {
         attrSynchronizable = kCFBooleanTrue;
-    } else {
+    } else if ([synchronizable isEqualToString:@"false"]) {
         attrSynchronizable = kCFBooleanFalse;
     }
     search[(__bridge id)kSecAttrSynchronizable] = (__bridge id) attrSynchronizable;
@@ -157,7 +158,7 @@ static NSString *const InvalidParameters = @"Invalid parameter's type";
 
     if ([synchronizable isEqualToString:@"true"]) {
         search[(__bridge id)kSecAttrSynchronizable] = (__bridge id)kCFBooleanTrue;
-    } else {
+    } else if ([synchronizable isEqualToString:@"false"]) {
         search[(__bridge id)kSecAttrSynchronizable] = (__bridge id)kCFBooleanFalse;
     }
 
@@ -187,7 +188,7 @@ static NSString *const InvalidParameters = @"Invalid parameter's type";
     
     if ([synchronizable isEqualToString:@"true"]) {
         search[(__bridge id)kSecAttrSynchronizable] = (__bridge id)kCFBooleanTrue;
-    } else {
+    } else if ([synchronizable isEqualToString:@"false"]) {
         search[(__bridge id)kSecAttrSynchronizable] = (__bridge id)kCFBooleanFalse;
     }
     
@@ -234,7 +235,7 @@ static NSString *const InvalidParameters = @"Invalid parameter's type";
 
     if ([synchronizable isEqualToString:@"true"]) {
         search[(__bridge id)kSecAttrSynchronizable] = (__bridge id)kCFBooleanTrue;
-    } else {
+    } else if ([synchronizable isEqualToString:@"false"]) {
         search[(__bridge id)kSecAttrSynchronizable] = (__bridge id)kCFBooleanFalse;
     }
 
@@ -270,7 +271,7 @@ static NSString *const InvalidParameters = @"Invalid parameter's type";
     
     if ([synchronizable isEqualToString:@"true"]) {
         search[(__bridge id)kSecAttrSynchronizable] = (__bridge id)kCFBooleanTrue;
-    } else {
+    } else if ([synchronizable isEqualToString:@"false"]) {
         search[(__bridge id)kSecAttrSynchronizable] = (__bridge id)kCFBooleanFalse;
     }
     

@@ -26,9 +26,9 @@ enum KeychainAccessibility {
 abstract class AppleOptions extends Options {
   const AppleOptions({
     String? groupId,
-    String? accountName = AppleOptions.defaultAccountName,
+    String? accountName,
     KeychainAccessibility accessibility = KeychainAccessibility.unlocked,
-    bool synchronizable = false,
+    bool? synchronizable,
   })  : _groupId = groupId,
         _accessibility = accessibility,
         _accountName = accountName,
@@ -39,7 +39,7 @@ abstract class AppleOptions extends Options {
   final String? _groupId;
   final String? _accountName;
   final KeychainAccessibility _accessibility;
-  final bool _synchronizable;
+  final bool? _synchronizable;
 
   @override
   Map<String, String> toMap() => <String, String>{

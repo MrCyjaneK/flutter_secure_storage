@@ -4,9 +4,9 @@ part of flutter_secure_storage;
 class MacOsOptions extends AppleOptions {
   const MacOsOptions({
     String? groupId,
-    String? accountName = AppleOptions.defaultAccountName,
+    String? accountName,
     KeychainAccessibility accessibility = KeychainAccessibility.unlocked,
-    bool synchronizable = false,
+    bool? synchronizable,
   }) : super(
           groupId: groupId,
           accountName: accountName,
@@ -26,6 +26,6 @@ class MacOsOptions extends AppleOptions {
         groupId: groupId ?? _groupId,
         accountName: accountName ?? _accountName,
         accessibility: accessibility ?? _accessibility,
-        synchronizable: synchronizable ?? _synchronizable,
+        synchronizable: synchronizable,
       );
 }
