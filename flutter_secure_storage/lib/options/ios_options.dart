@@ -6,7 +6,7 @@ class IOSOptions extends AppleOptions {
     String? groupId,
     String? accountName,
     KeychainAccessibility accessibility = KeychainAccessibility.unlocked,
-    bool synchronizable = false,
+    bool? synchronizable,
   }) : super(
           groupId: groupId,
           accountName: accountName,
