@@ -26,15 +26,13 @@ enum KeychainAccessibility {
 abstract class AppleOptions extends Options {
   const AppleOptions({
     String? groupId,
-    String? accountName = AppleOptions.defaultAccountName,
+    String? accountName,
     KeychainAccessibility accessibility = KeychainAccessibility.unlocked,
     bool synchronizable = false,
   })  : _groupId = groupId,
         _accessibility = accessibility,
         _accountName = accountName,
         _synchronizable = synchronizable;
-
-  static const defaultAccountName = 'flutter_secure_storage_service';
 
   final String? _groupId;
   final String? _accountName;
