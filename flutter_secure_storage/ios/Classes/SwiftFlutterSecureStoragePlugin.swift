@@ -116,8 +116,8 @@ public class SwiftFlutterSecureStoragePlugin: NSObject, FlutterPlugin {
         let groupId = options["groupId"] as? String
         let synchronizableString = options["synchronizable"] as? String
         
-        
-        let synchronizable: Bool = ((synchronizableString != nil ? Bool(synchronizableString!) : false) != nil)
+
+        let synchronizable: Bool = synchronizableString != nil && Bool(synchronizableString!) == true
 
         let key = arguments["key"] as? String
         let accessibility = options["accessibility"] as? String
