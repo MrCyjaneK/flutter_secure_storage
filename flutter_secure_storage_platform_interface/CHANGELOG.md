@@ -1,3 +1,6 @@
+## 1.1.0
+Adds onCupertinoProtectedDataAvailabilityChanged and isCupertinoProtectedDataAvailable.
+
 ## 1.0.2
 - Update Dart SDK Constraint to support <4.0.0 instead of <3.0.0.
 

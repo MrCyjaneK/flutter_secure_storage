@@ -1,3 +1,9 @@
+## 3.1.1
+Updated flutter_secure_storage_platform_interface to latest version.
+
+## 3.1.0
+Fixed CompanyName and CompanyProduct on Windows are ignored when the lang-charset in the Runner.rc file is not 040904e4
+
 ## 3.0.0
 - Migrated to win32 package replacing C.
 - Changed PathNotFoundException to FileSystemException to be backwards compatible with Flutter SDK 2.12.0

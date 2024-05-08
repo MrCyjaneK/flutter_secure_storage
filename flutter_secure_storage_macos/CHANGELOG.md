@@ -1,3 +1,11 @@
+## 3.1.0
+New Features:
+* Added isProtectedDataAvailable, A Boolean value that indicates whether content protection is active.
+
+Improvements:
+* Use accessibility option for all operations
+* Added privacy manifest
+
 ## 3.0.1
 Update Dart SDK Constraint to support <4.0.0 instead of <3.0.0.
 

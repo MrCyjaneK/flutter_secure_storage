@@ -1,3 +1,7 @@
+## 1.2.1
+- Fixed search with schemas fails in cold keyrings
+- Fixed erase called on null
+
 ## 1.2.0
 - Remove and replace libjsoncpp1 dependency
 - Update Dart SDK Constraint to support <4.0.0 instead of <3.0.0.

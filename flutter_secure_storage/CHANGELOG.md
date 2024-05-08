@@ -1,3 +1,16 @@
+## 9.1.0
+New Features:
+* [iOS, macOS] Added isProtectedDataAvailable, A boolean value that indicates whether content protection is active.
+
+Improvements:
+* [iOS, macOS] Use accessibility option for all operations
+* [iOS, macOS] Added privacy manifest 
+* [iOS] Fixes error when no item exists
+* [Linux] Fixed search with schemas fails in cold keyrings
+* [Linux] Fixed erase called on null
+* [Android] Fixed native Android stacktraces in PlatformExceptions
+* [Android] Fixed exception when reading data after boot
+
 ## 9.0.0
 Breaking changes:
 * [Windows] Migrated to FFI with win32 package.
