@@ -1,3 +1,4 @@
+/// Web library for flutter_secure_storage
 library flutter_secure_storage_web;
 
 import 'dart:convert';
@@ -180,4 +181,11 @@ class FlutterSecureStorageWeb extends FlutterSecureStoragePlatform {
 
     return plainText;
   }
+
+  @override
+  Future<bool> isCupertinoProtectedDataAvailable() => Future.value(false);
+
+  @override
+  Stream<bool> get onCupertinoProtectedDataAvailabilityChanged =>
+      Stream.empty();
 }

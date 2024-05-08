@@ -35,7 +35,8 @@ public class FlutterSecureStorage {
     private StorageCipherFactory storageCipherFactory;
     private Boolean failedToUseEncryptedSharedPreferences = false;
 
-    public FlutterSecureStorage(Context context) {
+    public FlutterSecureStorage(Context context, Map<String, Object> options) {
+        this.options = options;
         applicationContext = context.getApplicationContext();
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
@@ -47,6 +48,11 @@ public class FlutterSecureStorage {
     }
 
     @SuppressWarnings({"ConstantConditions"})
+    boolean getResetOnError() {
+        return options.containsKey("resetOnError") && options.get("resetOnError").equals("true");
+    }
+
+    @SuppressWarnings({"ConstantConditions"})
     private boolean getUseEncryptedSharedPreferences() {
         if (failedToUseEncryptedSharedPreferences) {
             return false;
@@ -54,12 +60,16 @@ public class FlutterSecureStorage {
         return options.containsKey("encryptedSharedPreferences") && options.get("encryptedSharedPreferences").equals("true") && Build.VERSION.SDK_INT >= Build.VERSION_CODES.M;
     }
 
-    boolean containsKey(String key) {
+    public boolean containsKey(String key) {
         ensureInitialized();
         return preferences.contains(key);
     }
 
-    String read(String key) throws Exception {
+    public String addPrefixToKey(String key) {
+        return ELEMENT_PREFERENCES_KEY_PREFIX + "_" + key;
+    }
+
+    public String read(String key) throws Exception {
         ensureInitialized();
 
         String rawValue = preferences.getString(key, null);
@@ -93,7 +103,7 @@ public class FlutterSecureStorage {
         return all;
     }
 
-    void write(String key, String value) throws Exception {
+    public void write(String key, String value) throws Exception {
         ensureInitialized();
 
         SharedPreferences.Editor editor = preferences.edit();
@@ -115,7 +125,7 @@ public class FlutterSecureStorage {
         editor.apply();
     }
 
-    void deleteAll() {
+    public void deleteAll() {
         ensureInitialized();
 
         final SharedPreferences.Editor editor = preferences.edit();
@@ -126,19 +136,22 @@ public class FlutterSecureStorage {
         editor.apply();
     }
 
+   protected void ensureOptions(){
+       if (options.containsKey("sharedPreferencesName") && !((String) options.get("sharedPreferencesName")).isEmpty()) {
+           SHARED_PREFERENCES_NAME = (String) options.get("sharedPreferencesName");
+       }
+
+       if (options.containsKey("preferencesKeyPrefix") && !((String) options.get("preferencesKeyPrefix")).isEmpty()) {
+           ELEMENT_PREFERENCES_KEY_PREFIX = (String) options.get("preferencesKeyPrefix");
+       }
+    }
     @SuppressWarnings({"ConstantConditions"})
     private void ensureInitialized() {
         // Check if already initialized.
         // TODO: Disable for now because this will break mixed usage of secureSharedPreference
 //        if (preferences != null) return;
 
-        if (options.containsKey("sharedPreferencesName") && !((String) options.get("sharedPreferencesName")).isEmpty()) {
-            SHARED_PREFERENCES_NAME = (String) options.get("sharedPreferencesName");
-        }
-
-        if (options.containsKey("preferencesKeyPrefix") && !((String) options.get("preferencesKeyPrefix")).isEmpty()) {
-            ELEMENT_PREFERENCES_KEY_PREFIX = (String) options.get("preferencesKeyPrefix");
-        }
+        ensureOptions();
 
         SharedPreferences nonEncryptedPreferences = applicationContext.getSharedPreferences(
                 SHARED_PREFERENCES_NAME,

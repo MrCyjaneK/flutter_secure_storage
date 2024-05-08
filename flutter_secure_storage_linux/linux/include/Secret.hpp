@@ -1,5 +1,5 @@
 #include "FHashTable.hpp"
-#include <json/json.h>
+#include "json.hpp"
 #include <libsecret/secret.h>
 #include <memory>
 
@@ -28,37 +28,40 @@ public:
   }
 
   bool addItem(const char *key, const char *value) {
-    Json::Value root = readFromKeyring();
+    nlohmann::json root = readFromKeyring();
     root[key] = value;
-    return this->storeToKeyring(root);
+    return storeToKeyring(root);
   }
 
   std::string getItem(const char *key) {
     std::string result;
-    Json::Value root = readFromKeyring();
-    Json::Value resultJson = root[key];
-    if (resultJson.isString()) {
-      result = resultJson.asString();
+    nlohmann::json root = readFromKeyring();
+    nlohmann::json value = root[key];
+    if(value.is_string()){
+      result = value.get<std::string>();
       return result;
     }
     return "";
   }
 
   void deleteItem(const char *key) {
-    Json::Value root = readFromKeyring();
-    root.removeMember(key);
-    this->storeToKeyring(root);
+    try {
+      nlohmann::json root = readFromKeyring();
+      if (root.is_null()) {
+          return;
+      }
+      root.erase(key);
+      storeToKeyring(root);
+    } catch (const std::exception& e) {
+        return;
+    }
   }
 
-  bool deleteKeyring() { return this->storeToKeyring(Json::Value()); }
+  bool deleteKeyring() { return this->storeToKeyring(nlohmann::json()); }
 
-  bool storeToKeyring(Json::Value value) {
-    Json::StreamWriterBuilder builder;
-    const std::string output = Json::writeString(builder, value);
+  bool storeToKeyring(nlohmann::json value) {
+    const std::string output = value.dump();
     g_autoptr(GError) err = nullptr;
-
-    builder["indentation"] = "";
-
     bool result = secret_password_storev_sync(
         &the_schema, m_attributes.getGHashTable(), nullptr, label.c_str(),
         output.c_str(), nullptr, &err);
@@ -70,11 +73,11 @@ public:
     return result;
   }
 
-  Json::Value readFromKeyring() {
-    Json::Value root;
-    Json::CharReaderBuilder charBuilder;
-    std::unique_ptr<Json::CharReader> reader(charBuilder.newCharReader());
+  nlohmann::json readFromKeyring() {
+    nlohmann::json value;
     g_autoptr(GError) err = nullptr;
+
+    warmupKeyring();
 
     secret_autofree gchar *result = secret_password_lookupv_sync(
         &the_schema, m_attributes.getGHashTable(), nullptr, &err);
@@ -82,13 +85,37 @@ public:
     if (err) {
       throw err->message;
     }
-
-    if (result != nullptr && strcmp(result, "") != 0 &&
-        reader->parse(result, result + strlen(result), &root, NULL)) {
-      return root;
+    if(result != NULL && strcmp(result, "") != 0){
+      value = nlohmann::json::parse(result);
     }
+    return value;
+  }
 
-    this->storeToKeyring(root);
-    return root;
+private:
+  // Search with schemas fails in cold keyrings.
+  // https://gitlab.gnome.org/GNOME/gnome-keyring/-/issues/89
+  //
+  // Note that we're not using the workaround mentioned in the above issue. Instead, we're using
+  // a workaround as implemented in http://crbug.com/660005. Reason being that with the lookup
+  // approach we can't distinguish whether the keyring was actually unlocked or whether the user
+  // cancelled the password prompt.
+  void warmupKeyring() {
+    g_autoptr(GError) err = nullptr;
+
+    FHashTable attributes;
+    attributes.insert("explanation", "Because of quirks in the gnome libsecret API, "
+            "flutter_secret_storage needs to store a dummy entry to guarantee that "
+            "this keyring was properly unlocked. More details at http://crbug.com/660005.");
+
+    const gchar* dummy_label = "FlutterSecureStorage Control";
+
+    // Store a dummy entry without `the_schema`.
+    bool success = secret_password_storev_sync(
+        NULL, attributes.getGHashTable(), nullptr, dummy_label,
+        "The meaning of life", nullptr, &err);
+
+    if (!success) {
+      throw "Failed to unlock the keyring";
+    }
   }
 };

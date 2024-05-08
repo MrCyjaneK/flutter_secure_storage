@@ -11,6 +11,7 @@ import androidx.annotation.NonNull;
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.util.HashMap;
 import java.util.Map;
 
 import io.flutter.embedding.engine.plugins.FlutterPlugin;
@@ -30,7 +31,7 @@ public class FlutterSecureStoragePlugin implements MethodCallHandler, FlutterPlu
 
     public void initInstance(BinaryMessenger messenger, Context context) {
         try {
-            secureStorage = new FlutterSecureStorage(context);
+            secureStorage = new FlutterSecureStorage(context, new HashMap<>());
 
             workerThread = new HandlerThread("com.it_nomads.fluttersecurestorage.worker");
             workerThread.start();
@@ -67,26 +68,16 @@ public class FlutterSecureStoragePlugin implements MethodCallHandler, FlutterPlu
         workerThreadHandler.post(new MethodRunner(call, result));
     }
 
-    @SuppressWarnings({"unchecked", "ConstantConditions"})
-    private boolean getResetOnErrorFromCall(MethodCall call) {
-        Map<String, Object> arguments = (Map<String, Object>) call.arguments;
-        return arguments.containsKey("resetOnError") && arguments.get("resetOnError").equals("true");
-    }
-
     @SuppressWarnings("unchecked")
     private String getKeyFromCall(MethodCall call) {
         Map<String, Object> arguments = (Map<String, Object>) call.arguments;
-        return addPrefixToKey((String) arguments.get("key"));
+        return secureStorage.addPrefixToKey((String) arguments.get("key"));
     }
 
     @SuppressWarnings("unchecked")
     private String getValueFromCall(MethodCall call) {
         Map<String, Object> arguments = (Map<String, Object>) call.arguments;
         return (String) arguments.get("value");
-    }
-
-    private String addPrefixToKey(String key) {
-        return secureStorage.ELEMENT_PREFERENCES_KEY_PREFIX + "_" + key;
     }
 
     /**
@@ -135,7 +126,8 @@ public class FlutterSecureStoragePlugin implements MethodCallHandler, FlutterPlu
             boolean resetOnError = false;
             try {
                 secureStorage.options = (Map<String, Object>) ((Map<String, Object>) call.arguments).get("options");
-                resetOnError = getResetOnErrorFromCall(call);
+                secureStorage.ensureOptions();
+                resetOnError = secureStorage.getResetOnError();
                 switch (call.method) {
                     case "write": {
                         String key = getKeyFromCall(call);
@@ -191,14 +183,22 @@ public class FlutterSecureStoragePlugin implements MethodCallHandler, FlutterPlu
                 Log.i("Creating sharedPrefs", e.getLocalizedMessage());
             } catch (Exception e) {
                 if (resetOnError) {
-                    secureStorage.deleteAll();
-                    result.success("Data has been reset");
+                    try {
+                        secureStorage.deleteAll();
+                        result.success("Data has been reset");
+                    } catch (Exception ex) {
+                        handleException(ex);
+                    }
                 } else {
-                    StringWriter stringWriter = new StringWriter();
-                    e.printStackTrace(new PrintWriter(stringWriter));
-                    result.error("Exception encountered", call.method, stringWriter.toString());
+                    handleException(e);
                 }
             }
+        }
+
+        private void handleException(Exception e) {
+            StringWriter stringWriter = new StringWriter();
+            e.printStackTrace(new PrintWriter(stringWriter));
+            result.error("Exception encountered", call.method, stringWriter.toString());
         }
     }
 }
