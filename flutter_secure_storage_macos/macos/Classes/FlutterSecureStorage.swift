@@ -81,6 +81,7 @@ class FlutterSecureStorage{
         if (status == noErr) {
             value = String(data: ref as! Data, encoding: .utf8)
         }
+        print("reading: \(key) \(status) \(value)")
         return FlutterSecureStorageResponse(status: status, value: value)
     }
     
@@ -122,26 +123,30 @@ class FlutterSecureStorage{
 
         let keyExists = containsKey(key: key, groupId: groupId, accountName: accountName, synchronizable: synchronizable)
         var keychainQuery = baseQuery(key: key, groupId: groupId, accountName: accountName, synchronizable: synchronizable, returnData: nil)
+        
+        var status: OSStatus?
         if (keyExists) {
             var update: [CFString: Any?] = [
                 kSecValueData: value.data(using: String.Encoding.utf8),
                 kSecAttrAccessible: attrAccessible,
                 kSecAttrSynchronizable: synchronizable
             ]
-            if #available(macOS 10.15, *) {
-                update[kSecUseDataProtectionKeychain] = true
-            }
         
-            return SecItemUpdate(keychainQuery as CFDictionary, update as CFDictionary)
+            status = SecItemUpdate(keychainQuery as CFDictionary, update as CFDictionary)
         } else {
             keychainQuery[kSecValueData] = value.data(using: String.Encoding.utf8)
             keychainQuery[kSecAttrAccessible] = attrAccessible
-            if #available(macOS 10.15, *) {
-                keychainQuery[kSecUseDataProtectionKeychain] = true
-            }
             
-            return SecItemAdd(keychainQuery as CFDictionary, nil)
+            status = SecItemAdd(keychainQuery as CFDictionary, nil)
         }
+        
+        if let error = SecCopyErrorMessageString(status!, nil) {
+            print("Write operation status: \(error) \(value)")
+        } else {
+            print("Write operation status: Success")
+        }
+        
+        return status!
     }
     
     struct FlutterSecureStorageResponse {
@@ -149,4 +154,3 @@ class FlutterSecureStorage{
         var value: Any?
     }
 }
-
