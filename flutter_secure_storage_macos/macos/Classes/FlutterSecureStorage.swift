@@ -81,7 +81,8 @@ class FlutterSecureStorage{
         if (status == noErr) {
             value = String(data: ref as! Data, encoding: .utf8)
         }
-        print("reading: \(key) \(status) \(value)")
+        
+        // print("reading: \(key) \(status) \(value)")
         return FlutterSecureStorageResponse(status: status, value: value)
     }
     
@@ -141,9 +142,7 @@ class FlutterSecureStorage{
         }
         
         if let error = SecCopyErrorMessageString(status!, nil) {
-            print("Write operation status: \(error) \(value)")
-        } else {
-            print("Write operation status: Success")
+            print("write status: \(error) \(value)")
         }
         
         return status!
