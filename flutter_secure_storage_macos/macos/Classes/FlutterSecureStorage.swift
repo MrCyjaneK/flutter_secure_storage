@@ -31,6 +31,11 @@ class FlutterSecureStorage{
         if (returnData != nil) {
             keychainQuery[kSecReturnData] = returnData
         }
+
+        if #available(macOS 10.15, *) {
+            keychainQuery[kSecUseDataProtectionKeychain] = true
+        }
+
         return keychainQuery
     }
     
@@ -81,6 +86,7 @@ class FlutterSecureStorage{
         if (status == noErr) {
             value = String(data: ref as! Data, encoding: .utf8)
         }
+
         print("reading: \(key) \(status) \(value)")
         return FlutterSecureStorageResponse(status: status, value: value)
     }
@@ -136,14 +142,12 @@ class FlutterSecureStorage{
         } else {
             keychainQuery[kSecValueData] = value.data(using: String.Encoding.utf8)
             keychainQuery[kSecAttrAccessible] = attrAccessible
-            
+
             status = SecItemAdd(keychainQuery as CFDictionary, nil)
         }
         
         if let error = SecCopyErrorMessageString(status!, nil) {
-            print("Write operation status: \(error) \(value)")
-        } else {
-            print("Write operation status: Success")
+            print("write status: \(error) \(value)")
         }
         
         return status!
